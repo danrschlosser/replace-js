@@ -1,4 +1,6 @@
-(function(window) {
+/* */
+"format cjs";
+(function(global) {
 
   "use strict";
 
@@ -934,6 +936,11 @@
     return width;
   };
 
-  window.Sub = Sub;
-
-}(window));
+  if (typeof define === 'function' && define.amd) {
+    define(Sub);
+  } else if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Sub;
+  } else {
+    global.Sub = Sub;
+  }
+}(this));
