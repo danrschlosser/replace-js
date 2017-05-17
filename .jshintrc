@@ -1,6 +1,16 @@
 {
-	"browser": true,
-	"devel": true,
-	"jasmine": true,
-	"predef": [ "Sub" ]
+  "browser": true,
+  "devel": true,
+  "jasmine": true,
+  "predef": ["Sub"],
+
+  "node": true,
+  "indent": 2,
+  "latedef": true,
+  "noempty": false,
+  "quotmark": "double",
+  "unused": true,
+  "strict": true,
+  "esversion": 6,
+  "camelcase": false
 }
