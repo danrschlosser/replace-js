@@ -7,7 +7,7 @@ module.exports = function (grunt) {
   grunt.initConfig({
     babel: {
       options: {
-        sourceMap: true,
+        sourceMap: false,
         presets: ['es2015']
       },
       dist: {
@@ -37,5 +37,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks("grunt-contrib-jasmine");
   grunt.loadNpmTasks("grunt-contrib-uglify");
 
-  grunt.registerTask("default", ["babel"]);
+  grunt.registerTask("default", ["babel", "uglify"]);
 };
