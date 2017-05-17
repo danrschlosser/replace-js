@@ -16,7 +16,7 @@
    * @return {int} difference in cost - positive if 1 > 2, negative if 2 > 1,
    *                                    0 if 1 === 2
    */
-  function _sortAnnotatedAction(annotatedAction1, annotatedAction2) {
+  const _sortAnnotatedAction = (annotatedAction1, annotatedAction2) => {
     return annotatedAction1.action.cost - annotatedAction2.action.cost;
   }
 
@@ -74,34 +74,35 @@
         start = end + 1;
       }
     }
+
     if (start < end) {
       components.push(rawSentence.slice(start, end));
     }
+
     return components;
   }
+
+
+  const transitions = {
+    "WebkitTransition": "webkitTransitionEnd",
+    "MozTransition": "transitionend",
+    "MSTransition": "msTransitionEnd",
+    "OTransition": "otransitionend",
+    "transition": "transitionend",
+  };
 
   /**
    * Find the CSS transition end event that we should listen for.
    *
    * @returns {string} t - the transition string
    */
-  function _whichTransitionEndEvent() {
-    var t;
+  const _whichTransitionEndEvent = () => {
     var el = document.createElement("fakeelement");
-    var transitions = {
-      "WebkitTransition": "webkitTransitionEnd",
-      "MozTransition": "transitionend",
-      "MSTransition": "msTransitionEnd",
-      "OTransition": "otransitionend",
-      "transition": "transitionend",
-    };
-    for (t in transitions) {
-      if (transitions.hasOwnProperty(t)) {
-        if (el.style[t] !== undefined) {
-          return transitions[t];
-        }
-      }
-    }
+
+    Object.entries(transitions).filter((k, _) => el.style[k] !== undefined).forEach((_, v) => {
+      return k;
+    })
+
   }
 
   /**
@@ -113,12 +114,12 @@
    *
    * @returns {string} template - the HTML to inject.
    */
-  function _wordTemplate(namespace, idx) {
+  const _wordTemplate = (namespace, idx) => {
     return (
-      "<div class=\"" + namespace + "-to-idx-" + idx + " " + namespace + "-word\">" +
-      "<span class=\"" + namespace + "-visible\" style=\"opacity: 0\"></span>" +
-      "<span class=\"" + namespace + "-invisible\" style=\"width: 0px\"></span>" +
-      "</div>"
+      `<div class="${namespace}-to-idx-${idx} ${namespace}-word">
+        <span class="${namespace}-visible" style="opacity: 0"></span>
+        <span class="${namespace}-invisible" style="width: 0px"></span>
+      </div>`
     );
   }
 
@@ -130,78 +131,86 @@
    * @param {number} transitionSpeed - the speed for CSS transitions.
    * @param {number} height - the outerHeight of the wrapper.
    */
-  function _injectStyle(namespace, transitionSpeed, height, fontFamily) {
-    var css =
-      "@font-face {\n" +
-      "    font-family: " + namespace + "-empty;\n" +
-      "    src: url(data:application/font-woff;charset=utf-8;base64,d09GRk9UVE8AAAQ0AAoAAAAAA+wAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABDRkYgAAAA9AAAAJ4AAACeXQ48j09TLzIAAAGUAAAAYAAAAGAIIgbWY21hcAAAAfQAAABEAAAARAAyAGlnYXNwAAACOAAAAAgAAAAIAAAAEGhlYWQAAAJAAAAANgAAADb9mzB5aGhlYQAAAngAAAAkAAAAJAHiAeVobXR4AAACnAAAABAAAAAQAAAAAG1heHAAAAKsAAAABgAAAAYABFAAbmFtZQAAArQAAAFdAAABXVqZXRlwb3N0AAAEFAAAACAAAAAgAAMAAAEABAQAAQEBDHNwYWNlLWVtcHR5AAECAAEAOvgcAvgbA/gYBB4KABlT/4uLHgoAGVP/i4sMB4tr+JT4dAUdAAAAfA8dAAAAgREdAAAACR0AAACVEgAFAQEMFxkbHnNwYWNlLWVtcHR5c3BhY2UtZW1wdHl1MHUxdTIwAAACAYkAAgAEAQEEBwoN/JQO/JQO/JQO/JQO+JQU+JQViwwKAAAAAwIAAZAABQAAAUwBZgAAAEcBTAFmAAAA9QAZAIQAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAABAAAAAIAHg/+D/4AHgACAAAAABAAAAAAAAAAAAAAAgAAAAAAACAAAAAwAAABQAAwABAAAAFAAEADAAAAAIAAgAAgAAAAEAIP/9//8AAAAAACD//f//AAH/4wADAAEAAAAAAAAAAAABAAH//wAPAAEAAAABAAAAeR2GXw889QALAgAAAAAAzz54vgAAAADPPni+AAAAAAAAAAAAAAAIAAIAAAAAAAAAAQAAAeD/4AAAAgAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAABQAAAEAAAAAAAOAK4AAQAAAAAAAQAWAAAAAQAAAAAAAgAOAGMAAQAAAAAAAwAWACwAAQAAAAAABAAWAHEAAQAAAAAABQAWABYAAQAAAAAABgALAEIAAQAAAAAACgAoAIcAAwABBAkAAQAWAAAAAwABBAkAAgAOAGMAAwABBAkAAwAWACwAAwABBAkABAAWAHEAAwABBAkABQAWABYAAwABBAkABgAWAE0AAwABBAkACgAoAIcAcwBwAGEAYwBlAC0AZQBtAHAAdAB5AFYAZQByAHMAaQBvAG4AIAAxAC4AMABzAHAAYQBjAGUALQBlAG0AcAB0AHlzcGFjZS1lbXB0eQBzAHAAYQBjAGUALQBlAG0AcAB0AHkAUgBlAGcAdQBsAGEAcgBzAHAAYQBjAGUALQBlAG0AcAB0AHkARwBlAG4AZQByAGEAdABlAGQAIABiAHkAIABJAGMAbwBNAG8AbwBuAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=) format('woff');\n" +
-      "}\n" +
-      "." + namespace + "-invisible { visibility: hidden; }\n" +
-      "." + namespace + "-animating {\n" +
-      "  -webkit-transition: " + transitionSpeed + "s all linear;\n" +
-      "  -moz-transition: " + transitionSpeed + "s all linear;\n" +
-      "  -o-transition: " + transitionSpeed + "s all linear;\n" +
-      "  transition: " + transitionSpeed + "s all linear; }\n" +
-      "." + namespace + " {\n" +
-      "  position: relative;\n" +
-      "  font-family: " + namespace + "-empty;\n" +
-      "  margin: 0;}\n" +
-      "." + namespace + ":after {\n" +
-      "  content: ' ';\n" +
-      "  display: block;\n" +
-      "  clear: both;}\n" +
-      "." + namespace + "-text-width-calculation {\n" +
-      "  position: absolute;\n" +
-      "  visibility: hidden;\n" +
-      "  font-family: " + fontFamily + ";\n" +
-      "  height: auto;\n" +
-      "  width: auto;\n" +
-      "  display: inline-block;\n" +
-      "  white-space: nowrap; }\n" +
-      "  ." + namespace + " ." + namespace + "-old-content {\n" +
-      "    font-family: " + fontFamily + ";\n" +
-      "    position: absolute;\n" +
-      "    left: 0;\n" +
-      "    width: 100%;\n" +
-      "    top: 0;\n" +
-      "    height: 100%;\n" +
-      "  }\n" +
-      "  ." + namespace + "." + namespace + "-loaded ." + namespace + "-old-content {" +
-      "    display: none;" +
-      "  }\n" +
-      "  ." + namespace + "." + namespace + "-loaded ." + namespace + "-word {" +
-      "    opacity: 1;" +
-      "  }\n" +
-      "  ." + namespace + " ." + namespace + "-punctuation { margin-left: -0.3rem; }\n" +
-      "  ." + namespace + " ." + namespace + "-word {\n" +
-      "    display: inline-block;\n" +
-      "    position: relative;\n" +
-      "    float: left;\n" +
-      "    opacity: 0;\n" +
-      "    font-family: " + fontFamily + ";\n" +
-      "    text-align: center;\n" +
-      "    height: " + height + ";\n" +
-      "    white-space: nowrap;\n" +
-      "    overflow: hidden;}\n" +
-      "    ." + namespace + " ." + namespace + "-word span {\n" +
-      "      top: 0;\n" +
-      "      position: relative;\n" +
-      "      overflow: hidden;\n" +
-      "      height: 1px;\n" +
-      // "      white-space: nowrap;\n" +
-      "      display: inline-block;}\n" +
-      "      ." + namespace + " ." + namespace + "-word ." + namespace + "-visible {\n" +
-      "        position: absolute;\n" +
-      "        display: inline-block;\n" +
-      "        height: " + height + ";\n" +
-      "        top: 0;\n" +
-      "        bottom: 0;\n" +
-      "        right:0;\n" +
-      "        left: 0;}";
-    var head = document.head || document.getElementsByTagName("head")[0];
-    var style = document.createElement("style");
+  const _injectStyle = (namespace, transitionSpeed, height, fontFamily) => {
+      const css =
+      `@font-face {\n
+        font-family: ${namespace}-empty;\n
+        src: url(data:application/font-woff;charset=utf-8;base64,d09GRk9UVE8AAAQ0AAoAAAAAA+wAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABDRkYgAAAA9AAAAJ4AAACeXQ48j09TLzIAAAGUAAAAYAAAAGAIIgbWY21hcAAAAfQAAABEAAAARAAyAGlnYXNwAAACOAAAAAgAAAAIAAAAEGhlYWQAAAJAAAAANgAAADb9mzB5aGhlYQAAAngAAAAkAAAAJAHiAeVobXR4AAACnAAAABAAAAAQAAAAAG1heHAAAAKsAAAABgAAAAYABFAAbmFtZQAAArQAAAFdAAABXVqZXRlwb3N0AAAEFAAAACAAAAAgAAMAAAEABAQAAQEBDHNwYWNlLWVtcHR5AAECAAEAOvgcAvgbA/gYBB4KABlT/4uLHgoAGVP/i4sMB4tr+JT4dAUdAAAAfA8dAAAAgREdAAAACR0AAACVEgAFAQEMFxkbHnNwYWNlLWVtcHR5c3BhY2UtZW1wdHl1MHUxdTIwAAACAYkAAgAEAQEEBwoN/JQO/JQO/JQO/JQO+JQU+JQViwwKAAAAAwIAAZAABQAAAUwBZgAAAEcBTAFmAAAA9QAZAIQAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAABAAAAAIAHg/+D/4AHgACAAAAABAAAAAAAAAAAAAAAgAAAAAAACAAAAAwAAABQAAwABAAAAFAAEADAAAAAIAAgAAgAAAAEAIP/9//8AAAAAACD//f//AAH/4wADAAEAAAAAAAAAAAABAAH//wAPAAEAAAABAAAAeR2GXw889QALAgAAAAAAzz54vgAAAADPPni+AAAAAAAAAAAAAAAIAAIAAAAAAAAAAQAAAeD/4AAAAgAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAABQAAAEAAAAAAAOAK4AAQAAAAAAAQAWAAAAAQAAAAAAAgAOAGMAAQAAAAAAAwAWACwAAQAAAAAABAAWAHEAAQAAAAAABQAWABYAAQAAAAAABgALAEIAAQAAAAAACgAoAIcAAwABBAkAAQAWAAAAAwABBAkAAgAOAGMAAwABBAkAAwAWACwAAwABBAkABAAWAHEAAwABBAkABQAWABYAAwABBAkABgAWAE0AAwABBAkACgAoAIcAcwBwAGEAYwBlAC0AZQBtAHAAdAB5AFYAZQByAHMAaQBvAG4AIAAxAC4AMABzAHAAYQBjAGUALQBlAG0AcAB0AHlzcGFjZS1lbXB0eQBzAHAAYQBjAGUALQBlAG0AcAB0AHkAUgBlAGcAdQBsAGEAcgBzAHAAYQBjAGUALQBlAG0AcAB0AHkARwBlAG4AZQByAGEAdABlAGQAIABiAHkAIABJAGMAbwBNAG8AbwBuAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=) format('woff');\n
+      }\n
+      .${namespace}-invisible { visibility: hidden; }\n
+      .${namespace}-animating {\n
+        -webkit-transition: ${transitionSpeed}s all linear;\n
+        -moz-transition: ${transitionSpeed}s all linear;\n
+        -o-transition: ${transitionSpeed}s all linear;\n
+        transition: ${transitionSpeed}s all linear;\n
+      }\n
+      .${namespace} {\n
+        position: relative;\n
+        font-family: ${namespace}-empty;\n
+        margin: \n
+      }\n
+      .${namespace}:after {\n
+        content: ' ';\n
+        display: block;\n
+        clear: both;\n
+      }\n
+      .${namespace}-text-width-calculation {\n
+        position: absolute;\n
+        visibility: hidden;\n
+        font-family: ${fontFamily};\n
+        height: auto;\n
+        width: auto;\n
+        display: inline-block;\n
+        white-space: nowrap;\n
+      }\n
+      .${namespace} .${namespace}-old-content {\n
+        font-family: ${fontFamily};\n
+        position: absolute;\n
+        left: 0;\n
+        width: 100%;\n
+        top: 0;\n
+        height: 100%;\n
+      }\n
+      .${namespace}.${namespace}-loaded .${namespace}-old-content {
+        display: none;
+      }\n
+      .${namespace}.${namespace}-loaded .${namespace}-word {
+        opacity: 1;
+      }\n
+      .${namespace} .${namespace}-punctuation { margin-left: -0.3rem; }\n
+      .${namespace} .${namespace}-word {\n
+        display: inline-block;\n
+        position: relative;\n
+        float: left;\n
+        opacity: 0;\n
+        font-family: ${fontFamily};\n
+        text-align: center;\n
+        height: ${height};\n
+        white-space: nowrap;\n
+        overflow: hidden;
+      }\n
+      .${namespace} .${namespace}-word span {\n
+        top: 0;\n
+        position: relative;\n
+        overflow: hidden;\n
+        height: 1px;\n
+        display: inline-block;
+      }\n
+      .${namespace} .${namespace}-word .${namespace}-visible {\n
+        position: absolute;\n
+        display: inline-block;\n
+        height: ${height};\n
+        top: 0;\n
+        bottom: 0;\n
+        right:0;\n
+        left: 0;
+    }`;
+
+    const head = document.head || document.getElementsByTagName("head")[0];
+    const style = document.createElement("style");
 
     style.type = "text/css";
+
     if (style.styleSheet) {
       style.styleSheet.cssText = css;
     } else {
@@ -255,46 +264,51 @@
    * @param {bool} options._testing - true if testing.  sentences will be
    *                                  ignored
    */
-  function Sub(rawSentences, options) {
-    var self = this;
-    var opts = options || {};
-    self.settings = {
-      containerId: opts.containerId || "sub",
-      namespace: opts.namespace || "sub",
-      interval: opts.interval || 5000,
-      speed: opts.speed || 200,
-      mobileWidth: opts.mobileWidth || null,
-      verbose: (opts.verbose !== undefined) ? opts.verbose : false,
-      random: (opts.random !== undefined) ? opts.random : false,
-      best: (opts.best !== undefined) ? opts.best : true,
-      clearOriginalContent: (opts.clearOriginalContent !== undefined) ? opts.clearOriginalContent : true,
-      _testing: (opts._testing !== undefined) ? opts._testing : false,
+class Sub {
+  constructor(rawSentences, options) {
+    const opts = options || {};
+    const namespace = opts.namespace || "sub";
+    const settings = {
+      "containerId": opts.containerId || "sub",
+      "namespace": namespace,
+      "interval": opts.interval || 5000,
+      "speed": opts.speed || 200,
+      "mobileWidth": opts.mobileWidth || null,
+      "verbose": (opts.verbose !== undefined) ? opts.verbose : false,
+      "random": (opts.random !== undefined) ? opts.random : false,
+      "best": (opts.best !== undefined) ? opts.best : true,
+      "clearOriginalContent": (opts.clearOriginalContent !== undefined) ? opts.clearOriginalContent : true,
+      "_testing": (opts._testing !== undefined) ? opts._testing : false,
     };
-    self.wrapper = document.getElementById(self.settings.containerId);
-    var wrapperStyle = window.getComputedStyle(self.wrapper);
+
+    this.settings = settings;
+    this.wrapper = document.getElementById(settings.containerId);
+
+    const wrapperStyle = window.getComputedStyle(this.wrapper);
 
     _injectStyle(
-      self.settings.namespace,
-      self.settings.speed / 1000,
+      namespace,
+      settings.speed / 1000,
       wrapperStyle.height,
       wrapperStyle.fontFamily);
 
-    self.highestTimeoutId = 0;
-    self.currentState = null;
-    self.actions = [];
-    self.invisibleClass = " ." + self.settings.namespace + "-invisible";
-    self.visibleClass = " ." + self.settings.namespace + "-visible";
-    self.fromClass = self.settings.namespace + "-from-idx-";
-    self.toClass = self.settings.namespace + "-to-idx-";
-    self.wrapperSelector = "#" + self.settings.namespace;
-    self.isEmpty = true;
+    this.highestTimeoutId = 0;
+    this.currentState = null;
+    this.actions = [];
+    this.invisibleClass = `.${namespace}-invisible`;
+    this.visibleClass = `.${namespace}-visible`;
+    this.fromClass = `${namespace}-from-idx-`;
+    this.toClass = `${namespace}-to-idx-`;
+    this.wrapperSelector = "#" + namespace;
+    this.isEmpty = true;
 
-    self._setupContainer();
-    if (!self.settings._testing) {
-      self._setSentences(self._parseSentences(rawSentences));
+    this._setupContainer();
+
+    if (!settings._testing) {
+      this._setSentences(this._parseSentences(rawSentences));
     }
-    return self;
   }
+
 
   /**
    * Parse the array of raw sentence strings into an array of arrays of words.
@@ -302,10 +316,11 @@
    * @param {string[]} rawSentences the sentences to parse
    * @returns {string[][]} sentences the
    */
-  Sub.prototype._parseSentences = function(rawSentences) {
+  _parseSentences(rawSentences) {
     if (!rawSentences || typeof rawSentences !== "object") {
       throw "rawSentences must be an array of strings.";
     }
+
     return rawSentences.map(_parseSentence);
   };
 
@@ -314,43 +329,54 @@
    * inside, and then give it the namespace class.  It will be the root element
    * for any changes we might make.
    */
-  Sub.prototype._setupContainer = function() {
-    var self = this;
-    var container = document.getElementById(self.settings.containerId);
+  _setupContainer() {
+    const {
+      namespace,
+      containerId,
+      clearOriginalContent
+    } = this.settings;
+
+    const container = document.getElementById(containerId);
+
     if (!container) {
-      throw "Cannot find element with id:" + self.settings.containerId;
+      throw "Cannot find element with id:" + containerId;
     }
-    var originalStyle = window.getComputedStyle(container);
+
+    const originalStyle = window.getComputedStyle(container);
+
     container.style.height = originalStyle.height;
-    if (self.settings.clearOriginalContent) {
+
+    if (clearOriginalContent) {
       container.innerHTML = '';
     } else {
       container.style.width = originalStyle.width;
-      container.innerHTML = '<span class="' + self.settings.namespace + '-old-content">' + container.innerHTML.replace(' ', '&nbsp;') + '</span>';
+
+      container.innerHTML = `<span class="${namespace}-old-content">${container.innerHTML.replace(' ', '&nbsp;')}</span>`;
     }
-    container.className = self.settings.namespace;
+
+    container.className = namespace;
   };
 
-  Sub.prototype._getOnResize = function() {
-    var self = this;
-    self.isStopped = false;
-    var onResize = function(e) {
-      self.lastWindowWidth = window.innerWidth;
+  _getOnResize() {
+    this.isStopped = false;
+
+    const onResize = e => {
+      this.lastWindowWidth = window.innerWidth;
 
       // Disable on small screens, if that parameter is provided.
-      if (self.settings.mobileWidth !== null) {
-        if (!self.isStopped && self.lastWindowWidth < self.settings.mobileWidth) {
+      if (this.settings.mobileWidth !== null) {
+        if (!this.isStopped && this.lastWindowWidth < this.settings.mobileWidth) {
           // stop on small screens
-          self._stop();
-          self.isStopped = true;
-        } else
-        if (self.isStopped && self.lastWindowWidth > self.settings.mobileWidth) {
+          this._stop();
+          this.isStopped = true;
+        } else if (this.isStopped && this.lastWindowWidth > this.settings.mobileWidth) {
           // start up again
-          self._run();
-          self.isStopped = false;
+          this._run();
+          this.isStopped = false;
         }
       }
     };
+
     return onResize;
   }
 
@@ -360,47 +386,59 @@
    *
    * This function should only be called internally.
    */
-  Sub.prototype._run = function() {
-    var self = this;
+  _run() {
+    const {
+      actions,
+      "settings": {
+        namespace,
+        interval
+      }
+    } = this;
 
     // We haven't finished generating self.actions yet, so delay running
-    if (!self.actions) {
-      setTimeout(function() {
-        self.run();
+    if (!actions) {
+      setTimeout(() => {
+        run();
       }, 20);
+
       return;
     }
 
     if (self.isEmpty) {
       self.isEmpty = false;
-      var action = self._computeActionsToChange([], self.actions[0].from);
+
+      const action = _computeActionsToChange([], actions[0].from);
+
       if (!action) {
         console.log(action);
+
         throw "returned null action";
       }
-      self._applyAction(action);
+
+      _applyAction(action);
     }
-    self.highestTimeoutId = setTimeout(function() {
-      self.wrapper.className += ' ' + self.settings.namespace + '-loaded';
-      self.wrapper.style.height = '';
-      self._sentenceLoop();
-    }, self.settings.interval);
+
+    this.highestTimeoutId = setTimeout(() => {
+      this.wrapper.classList.add(`${namespace}-loaded`);
+      this.wrapper.style.height = "";
+
+      this._sentenceLoop();
+    }, interval);
   }
 
   /**
    * Run the sentence loop and add resize handlers. If we haven't successfully
    * populated self.actions, we delay the running until we have.
    */
-  Sub.prototype.run = function() {
-    var self = this;
+  run() {
+    this.onResize = this._getOnResize();
 
-    self.onResize = self._getOnResize();
-    window.addEventListener('resize', self.onResize, false);
-    window.addEventListener('orientationchange', self.onResize, false);
+    window.addEventListener('resize', this.onResize, false);
+    window.addEventListener('orientationchange', this.onResize, false);
 
-    self._run();
+    this._run();
 
-    return self;
+    return this;
   };
 
   /**
@@ -408,26 +446,23 @@
    *
    * This function should only be called internally.
    */
-  Sub.prototype._stop = function() {
-    var self = this;
-
-    clearTimeout(self.highestTimeoutId);
+  _stop() {
+    clearTimeout(this.highestTimeoutId);
   }
 
   /**
    * Stop the sentence loop. This will stop all animations and remove event
    * listeners.
    */
-  Sub.prototype.stop = function() {
-    var self = this;
+  stop() {
+    window.removeEventListener('resize', this.onResize, false);
+    window.removeEventListener('orientationchange', this.onResize, false);
 
-    window.removeEventListener('resize', self.onResize, false);
-    window.removeEventListener('orientationchange', self.onResize, false);
+    _stop();
 
-    self._stop();
-
-    return self;
+    return this;
   }
+
 
   /**
    * Compute the actions required to transform `from` into `to`.
@@ -482,10 +517,12 @@
    *   @returns {int} actions.cost - total cost of action =
    *                                 removals + substitutions + insertions
    */
-  Sub.prototype._computeActionsToChange = function(from, to) {
-    var self = this;
-    if (self.settings.verbose) { console.log("_computeActionsToChange: ", from, to); }
-    var actions = {
+  _computeActionsToChange(from, to) {
+    if (this.settings.verbose) {
+      console.log("_computeActionsToChange: ", from, to);
+    }
+
+    const actions = {
       from: from,
       to: to,
       sub: [],
@@ -505,19 +542,18 @@
      *                           modified.  false if actions should be modified.
      * @returns {int} cost - the recursively built cost of actions to take.
      */
-    var __computeActionsToCange = function(fromIndex, toIndex, lookAhead) {
+    const __computeActionsToCange = (fromIndex, toIndex, lookAhead = false) => {
       var i;
-      lookAhead = lookAhead || false;
 
       // End of from list
       if (fromIndex >= from.length) {
         if (!lookAhead) {
-          for (i = toIndex; i < to.length; i++) {
-            actions.insert.push({
-              toWord: to[i],
+          actions.insert = actions.insert.concat(to.slice(toIndex).map((x, i) => {
+            return {
+              toWord: x,
               toIndex: i
-            });
-          }
+            }
+          }));
         }
         // base case, each insert costs 1
         return to.length - toIndex;
@@ -526,12 +562,12 @@
       // End of to list
       if (toIndex >= to.length) {
         if (!lookAhead) {
-          for (i = fromIndex; i < from.length; i++) {
-            actions.remove.push({
-              fromWord: from[i],
+          actions.remove = actions.remove.concat(from.slice(fromIndex).map((x, i) => {
+            return {
+              fromWord: x,
               fromIndex: i
-            });
-          }
+            }
+          }));
         }
         // base case, each remove costs 1
         return from.length - toIndex;
@@ -542,25 +578,27 @@
         if (lookAhead) {
           return 0;
         }
+
         actions.keep.push({
           fromWord: from[fromIndex],
           toWord: to[toIndex],
           fromIndex: fromIndex,
           toIndex: toIndex
         });
+
         // keep is free
         return __computeActionsToCange(fromIndex + 1, toIndex + 1);
       }
 
-      var foundIndex = from.indexOf(to[toIndex], fromIndex);
+      const foundIndex = from.indexOf(to[toIndex], fromIndex);
 
       if (lookAhead) {
         return foundIndex;
       }
 
-      if (fromIndex + 1 == from.length) {
+      if (fromIndex + 1 === from.length) {
         // Can't look ahead, make a move now
-        if(foundIndex === -1) {
+        if (foundIndex === -1) {
           actions.sub.push({
             fromWord: from[fromIndex],
             toWord: to[toIndex],
@@ -572,7 +610,7 @@
         }
       }
 
-      var futureIndex = __computeActionsToCange(fromIndex, toIndex + 1, true);
+      const futureIndex = __computeActionsToCange(fromIndex, toIndex + 1, true);
 
       if (foundIndex === -1) {
         if (futureIndex === 0) {
@@ -583,6 +621,7 @@
           // insert costs 1
           return __computeActionsToCange(fromIndex, toIndex + 1) + 1;
         }
+
         actions.sub.push({
           fromWord: from[fromIndex],
           toWord: to[toIndex],
@@ -594,8 +633,8 @@
       }
 
       if (foundIndex === fromIndex + 1 && futureIndex === fromIndex || foundIndex === futureIndex) {
-        var fromLeft = from.length - fromIndex;
-        var toLeft = to.length - toIndex;
+        const fromLeft = from.length - fromIndex;
+        const toLeft = to.length - toIndex;
 
         if (fromLeft > toLeft) {
           actions.insert.push({
@@ -615,7 +654,7 @@
         return __computeActionsToCange(fromIndex, toIndex + 1) + 1;
       }
 
-      if (foundIndex > futureIndex && futureIndex !== -1 ) {
+      if (foundIndex > futureIndex && futureIndex !== -1) {
         actions.sub.push({
           fromWord: from[fromIndex],
           toWord: to[toIndex],
@@ -645,8 +684,10 @@
 
     // Initalize the recursive call, the final result is the cost.
     actions.cost = __computeActionsToCange(0, 0);
+
     return actions;
   };
+
 
   /**
    * Generate self.actions.  If self.settings.best is true, we order the
@@ -657,14 +698,18 @@
    *
    * @param {string[][]} sentences - sentences to be converted to actions
    */
-  Sub.prototype._setSentences = function(sentences) {
-    var self = this;
-    var i, j, prevIndex;
+  _setSentences(sentences) {
+    const {
+      best,
+      random
+    } = this.settings;
+    const sentencesLen = sentences.length;
+
     if (sentences.length === 0) {
       self.actions = [];
     }
 
-    if (self.settings.best) {
+    if (best) {
       /* Because who says the Traveling Salesman Problem isn't releveant? */
 
       // compute a table of values table[fromIndex][toIndex] = {
@@ -672,173 +717,94 @@
       //   toIndex: toIndex,
       //   action: the action from sentences[fromIndex] to sentences[toIndex]
       // }
-      var table = sentences.map(function(from, fromIndex) {
-        return sentences.map(function(to, toIndex) {
-          if (fromIndex === toIndex) {
-            return {
-              action: { cost: Number.MAX_VALUE },
-              fromIndex: fromIndex,
-              toIndex: toIndex
-            };
-          }
-          var action = self._computeActionsToChange(sentences[fromIndex],
-                                                    sentences[toIndex]);
+      const table = sentences.map((from, fromIndex) => {
+        return sentences.map((to, toIndex) => {
           return {
-            action: action,
+            action: fromIndex === toIndex ? {
+              cost: Number.MAX_VALUE
+            } : this._computeActionsToChange(sentences[fromIndex], sentences[toIndex]),
             fromIndex: fromIndex,
             toIndex: toIndex
           };
         });
       });
-      var usedFromIndexes = [];
-      var from = 0;
+
+      const usedFromIndexes = [];
+      let from = 0;
 
       // sort each rows by cost, then sort the rows by lowest cost in that row
-      table.sort(function(row1, row2) {
+      table.sort((row1, row2) => {
         row1.sort(_sortAnnotatedAction);
         row2.sort(_sortAnnotatedAction);
+
         return row1[0].cost - row2[0].cost;
       });
 
-      var first = table[0][0].fromIndex;
+      const first = table[0][0].fromIndex;
 
       // Start with table[0][0], the lowest cost action.  Then, find the lowest
       // cost actions starting from table[0][0].toIndex, and so forth.
-      for (i = 0; i < sentences.length; i++) {
-        for (j = 0; j < sentences.length; j++) {
-          if ((i === sentences.length - 1 && table[from][j].toIndex === first) ||
-            (i !== sentences.length - 1 && usedFromIndexes.indexOf(table[from][j].toIndex) === -1)) {
-            self.actions.push(table[from][j].action);
+      for (let i = 0; i < sentencesLen; i++) {
+        for (let j = 0; j < sentencesLen; j++) {
+          if ((i === sentencesLen - 1 && table[from][j].toIndex === first) ||
+            (i !== sentencesLen - 1 && usedFromIndexes.indexOf(table[from][j].toIndex) === -1)) {
+            this.actions.push(table[from][j].action);
             usedFromIndexes.push(from);
+
             from = table[from][j].toIndex;
+
             break;
           }
         }
       }
 
-      if(self.settings.random) {
+      if (random) {
         // start from somewhere other than the beginning.
-        var start = Math.floor(Math.random() * (sentences.length));
-        for (i = 0; i < start; i++) {
-          self.actions.push(self.actions.shift());
+        for (i = 0; i < Math.floor(Math.random() * (sentencesLen)); i++) {
+          this.actions.push(this.actions.shift());
         }
       }
 
     } else {
+      const sortedSentences = (() => {
+        return random ? sentences.slice().sort(() => {
+          return 0.5 - Math.random();
+        }) : sentences;
+      })();
 
-      if (self.settings.random) {
-        // shuffle the sentences
-        sentences.sort(function() { return 0.5 - Math.random(); });
-      }
+      this.actions.concat(sortedSentences.map((x, i) => {
+        const prevIndex = (i === 0) ? (sentencesLen - 1) : i - 1;
 
-      for (i = 0; i < sentences.length; i++) {
-        prevIndex = (i === 0) ? (sentences.length - 1) : i - 1;
-        self.actions.push(self._computeActionsToChange(sentences[prevIndex],
-                                                       sentences[i]));
-      }
+        return this._computeActionsToChange(sortedSentences[prevIndex], x);
+      }));
     }
   };
+
 
   /**
    * Called in an infinite setTimeout loop.  Dequeues an action, performs it,
    * and enqueues it onto the end of the self.actions array.
    * Then calls setTimeout on itself, with self.settings.interval.
    */
-  Sub.prototype._sentenceLoop = function() {
-    var self = this;
-    var nextAction = self.actions.shift();
+  _sentenceLoop() {
+    const nextAction = this.actions.shift();
+
     if (!nextAction) {
       console.log(nextAction, self.actions);
+
       throw "returned null action";
     }
-    self._applyAction(nextAction);
-    self.actions.push(nextAction);
-    clearTimeout(self.highestTimeoutId);
-    self.highestTimeoutId = setTimeout(function() {
-      self._sentenceLoop();
-    }, self.settings.interval);
+
+    this._applyAction(nextAction);
+    this.actions.push(nextAction);
+
+    clearTimeout(this.highestTimeoutId);
+
+    this.highestTimeoutId = setTimeout(() => {
+      this._sentenceLoop();
+    }, this.settings.interval);
   };
 
-  /**
-   * Apply `action`, by performing the necessary substitutions, removals, keeps,
-   * and insertions.
-   */
-  Sub.prototype._applyAction = function(action) {
-    var self = this;
-    var words = document.getElementsByClassName(self.settings.namespace + '-word');
-    [].forEach.call(words, function(elem) {
-      if (self.settings.verbose) { console.log('replacing to- with from- for:', elem)}
-      elem.className = elem.className.replace(self.toClass, self.fromClass);
-    });
-    action.sub.map(function(subAction) {
-      self._subAction(subAction);
-    });
-    action.remove.map(function(removeAction) {
-      self._removeAction(removeAction);
-    });
-    action.keep.map(function(keepAction) {
-      self._keepAction(keepAction);
-    });
-    self._performInsertions(action.insert);
-  };
-
-  /**
-   * Removes the word from the sentence.
-   *
-   * @param {Object} removeAction - the removal to perform
-   * @param {int} removeAction.fromIndex - the index of the existing word
-   */
-  Sub.prototype._removeAction = function(removeAction) {
-    var self = this;
-    var fromIndexClass = self.fromClass + removeAction.fromIndex;
-    var animationContext = {
-      fromIndexClass: fromIndexClass,
-      word: document.querySelector(self.wrapperSelector + " ." + fromIndexClass),
-      visible: document.querySelector(self.wrapperSelector + " ." + fromIndexClass + self.visibleClass),
-      invisible: document.querySelector(self.wrapperSelector + " ." + fromIndexClass + self.invisibleClass),
-      newText: "" // We'll animate to zero width
-    };
-    if (self.settings.verbose) { console.log("remove", animationContext); }
-    new Animation("remove", self, animationContext);
-  };
-
-  /**
-   * Perform the given insertions
-   *
-   * @param {Object[]} insertions - the insertions to perform
-   * @param {int} insertions.toIndex - the index of the element to add
-   * @param {string} insertions.toWord - the word to insert
-   */
-  Sub.prototype._performInsertions = function(insertions) {
-    var self = this;
-    setTimeout(function () {
-      insertions.forEach(function(insertAction) {
-
-        /* Insert new node (no text yet) */
-        var html = _wordTemplate(self.settings.namespace, insertAction.toIndex);
-        if (insertAction.toIndex === 0) {
-          self.wrapper.insertAdjacentHTML("afterbegin", html);
-        } else {
-          var selector = self.wrapperSelector + " ." + self.toClass + (insertAction.toIndex - 1);
-          var prevSibling = document.querySelector(selector);
-          prevSibling.insertAdjacentHTML("afterend", html);
-        }
-
-        /*  Startup animations */
-        var toIndexClass = self.toClass + insertAction.toIndex;
-        var animationContext = {
-          toIndexClass: toIndexClass,
-          word: document.querySelector(self.wrapperSelector + " ." + toIndexClass),
-          visible: document.querySelector(self.wrapperSelector + " ." + toIndexClass + self.visibleClass),
-          invisible: document.querySelector(self.wrapperSelector + " ." + toIndexClass + self.invisibleClass),
-          newText: insertAction.toWord
-        };
-
-        if (self.settings.verbose) { console.log("insert", animationContext); }
-        new Animation("insert", self, animationContext);
-      });
-    }, self.settings.speed);
-  };
 
   /**
    * Perform the given substitution
@@ -849,20 +815,74 @@
    * @param {int} subAction.toIndex - the index to give the new word
    * @param {string} subAction.toWord - the word to sub with
    */
-  Sub.prototype._subAction = function(subAction) {
-    var self = this;
-    var fromIndexClass = self.fromClass + subAction.fromIndex;
-    var animationContext = {
+  _subAction(subAction) {
+    const {
+      fromClass,
+      toClass,
+      wrapperSelector,
+      visibleClass,
+      invisibleClass,
+      "settings": {
+        verbose
+      }
+    } = this;
+
+    const fromIndexClass = fromClass + subAction.fromIndex;
+    console.log(wrapperSelector)
+    console.log(fromIndexClass)
+    console.log(subAction)
+    console.log(document.querySelector(wrapperSelector + " ." + fromIndexClass))
+    const animationContext = {
       fromIndexClass: fromIndexClass,
-      toIndexClass: self.toClass + subAction.toIndex,
-      word: document.querySelector(self.wrapperSelector + " ." + fromIndexClass),
-      visible: document.querySelector(self.wrapperSelector + " ." + fromIndexClass + self.visibleClass),
-      invisible: document.querySelector(self.wrapperSelector + " ." + fromIndexClass + self.invisibleClass),
+      toIndexClass: toClass + subAction.toIndex,
+      word: document.querySelector(wrapperSelector + " ." + fromIndexClass),
+      visible: document.querySelector(wrapperSelector + " ." + fromIndexClass + visibleClass),
+      invisible: document.querySelector(wrapperSelector + " ." + fromIndexClass + invisibleClass),
       newText: subAction.toWord
     };
-    if (self.settings.verbose) { console.log("sub", animationContext); }
-    new Animation("sub", self, animationContext);
+
+    if (verbose) {
+      console.log("sub", this);
+    }
+
+    new Animation("sub", this, animationContext);
   };
+
+
+  /**
+   * Removes the word from the sentence.
+   *
+   * @param {Object} removeAction - the removal to perform
+   * @param {int} removeAction.fromIndex - the index of the existing word
+   */
+  _removeAction(removeAction) {
+    const {
+      fromClass,
+      wrapperSelector,
+      visibleClass,
+      invisibleClass,
+      "settings": {
+        verbose
+      }
+    } = this;
+
+    const fromIndexClass = fromClass + removeAction.fromIndex;
+
+    const animationContext = {
+      fromIndexClass: fromIndexClass,
+      word: document.querySelector(wrapperSelector + " ." + fromIndexClass),
+      visible: document.querySelector(wrapperSelector + " ." + fromIndexClass + visibleClass),
+      invisible: document.querySelector(wrapperSelector + " ." + fromIndexClass + invisibleClass),
+      newText: "" // We'll animate to zero width
+    };
+
+    if (verbose) {
+      console.log("remove", animationContext);
+    }
+
+    new Animation("remove", this, animationContext);
+  };
+
 
   /**
    * Perform the given keep action.
@@ -871,19 +891,123 @@
    * @param {int} keepAction.fromIndex - the index of the word to re-label
    * @param {int} keepAction.toIndex - the index to label this word
    */
-  Sub.prototype._keepAction = function(keepAction) {
-    var self = this;
-    var fromIndexClass = self.fromClass + keepAction.fromIndex;
-    var animationContext = {
+  _keepAction(keepAction) {
+    const {
+      fromClass,
+      toClass,
+      wrapperSelector,
+      "settings": {
+        verbose
+      }
+    } = this;
+
+    const fromIndexClass = fromClass + keepAction.fromIndex;
+
+    const animationContext = {
       fromIndexClass: fromIndexClass,
-      toIndexClass: self.toClass + keepAction.toIndex,
-      word: document.querySelector(self.wrapperSelector + " ." + fromIndexClass),
+      toIndexClass: toClass + keepAction.toIndex,
+      word: document.querySelector(wrapperSelector + " ." + fromIndexClass)
     };
 
-    if (self.settings.verbose) { console.log("keep", animationContext); }
-    new Animation("keep", self, animationContext);
+    if (verbose) {
+      console.log("keep", animationContext);
+    }
+
+    new Animation("keep", this, animationContext);
   };
 
+
+  /**
+   * Perform the given insertions
+   *
+   * @param {Object[]} insertions - the insertions to perform
+   * @param {int} insertions.toIndex - the index of the element to add
+   * @param {string} insertions.toWord - the word to insert
+   */
+  _performInsertions(insertions) {
+    const {
+      toClass,
+      wrapper,
+      wrapperSelector,
+      visibleClass,
+      invisibleClass,
+      "settings": {
+        namespace,
+        verbose,
+        speed
+      }
+    } = this;
+
+    setTimeout(() => {
+      insertions.forEach(insertAction => {
+        const { toIndex, toWord } = insertAction;
+
+        /* Insert new node (no text yet) */
+        const html = _wordTemplate(namespace, toIndex);
+
+        if (toIndex === 0) {
+          wrapper.insertAdjacentHTML("afterbegin", html);
+        } else {
+          const selector = wrapperSelector + " ." + toClass + (toIndex - 1);
+          const prevSibling = document.querySelector(selector);
+          prevSibling.insertAdjacentHTML("afterend", html);
+        }
+
+        /*  Startup animations */
+        const toIndexClass = toClass + toIndex;
+        const animationContext = {
+          toIndexClass: toIndexClass,
+          word: document.querySelector(wrapperSelector + " ." + toIndexClass),
+          visible: document.querySelector(wrapperSelector + " ." + toIndexClass + visibleClass),
+          invisible: document.querySelector(wrapperSelector + " ." + toIndexClass + invisibleClass),
+          newText: toWord
+        };
+
+        if (verbose) {
+          console.log("insert", animationContext);
+        }
+
+        new Animation("insert", this, animationContext);
+      });
+    }, speed);
+  };
+
+
+  /**
+   * Apply `action`, by performing the necessary substitutions, removals, keeps,
+   * and insertions.
+   */
+  _applyAction(action) {
+    const {
+      fromClass,
+      toClass,
+      wrapperSelector,
+      "settings": {
+        namespace,
+        verbose
+      }
+    } = this;
+
+    const words = Array.from(document.getElementsByClassName(namespace + '-word'));
+
+    words.forEach(elem => {
+      if (verbose) {
+        console.log('replacing to- with from- for:', elem)
+      }
+
+      elem.className = elem.className.replace(toClass, fromClass);
+    });
+
+    action.sub.forEach(subAction => this._subAction(subAction));
+
+    action.remove.forEach(removeAction => this._removeAction(removeAction));
+
+    action.keep.forEach(keepAction => this._keepAction(keepAction));
+
+    this._performInsertions(action.insert);
+  };
+
+}
   /***************************************************************************
    *                                                                         *
    *                               Animation()                               *
@@ -903,166 +1027,206 @@
    * @param {Object} animationContext - any context that is needed by the
    *                                    passed animation.
    */
-  function Animation(animation, sub, animationContext) {
-    var self = this;
-    self.sub = sub;
-    self.ctx = animationContext;
-    self.transitionEnd = _whichTransitionEndEvent();
-    self.animatingClass = " " + self.sub.settings.namespace + "-animating";
-    if (animation === "remove") {
-      self.steps = [
-        function() {self._fadeOut();},
-        function() {self._setWidth();},
-        function() {self._removeElement();}
-      ];
-    } else if (animation === "sub") {
-      self.steps = [
-        function() {self._reIndex();},
-        function() {self._fadeOut();},
-        function() {self._setWidth();},
-        function() {self._setTextAndFadeIn();},
-        function() {self._cleanUp();}];
-    } else if (animation === "insert") {
-      self.steps = [
-        function() {self._setWidth();},
-        function() {self._setTextAndFadeIn();},
-        function() {self._cleanUp();}];
-    } else if (animation === "keep") {
-      self.steps = [
-        function() {self._reIndex();}
-      ];
-    } else {
-      console.error("Unknown animation: ", animation);
+  class Animation {
+    constructor(animation, sub, animationContext) {
+      this.sub = sub;
+      this.ctx = animationContext;
+      this.transitionEnd = _whichTransitionEndEvent();
+      this.animatingClass = " " + sub.settings.namespace + "-animating";
+
+      this.steps = (() => {
+        if (animation === "remove") {
+           return [
+            () => { this._fadeOut(); },
+            () => { this._setWidth(); },
+            () => { this._removeElement(); }
+          ];
+        } else if (animation === "sub") {
+          return [
+            () => { this._reIndex(); },
+            () => { this._fadeOut(); },
+            () => { this._setWidth(); },
+            () => { this._setTextAndFadeIn(); },
+            () => { this._cleanUp(); }
+          ]
+        } else if (animation === "insert") {
+          return [
+            () => { this._setWidth(); },
+            () => { this._setTextAndFadeIn(); },
+            () => { this._cleanUp(); }
+          ]
+        } else if (animation === "keep") {
+          return [ () => { this._reIndex(); } ];
+        } else {
+          console.error("Unknown animation: ", animation);
+        }
+      })();
+
+      this.steps[0](); // dequeue an run the first task.
     }
-    self.steps[0](); // dequeue an run the first task.
+
+
+    /**
+     * Change the index class of the word.
+     */
+    _reIndex() {
+      const ctx = this.ctx;
+      console.log(ctx)
+      // Perform substitution if needed
+      if (this.sub.settings.verbose) {
+        console.log("_reIndex ", ctx.word.innerText, " from ", ctx.fromIndexClass, " to ", ctx.toIndexClass);
+      }
+
+      ctx.word.className = ctx.word.className.replace(ctx.fromIndexClass, ctx.toIndexClass);
+
+      // run next step if there is one
+      this.steps.shift(); // pop _reIndex
+
+      if (this.steps.length > 0) {
+        this.steps[0]();
+      }
+    }
+
+    /**
+     * Fade out this word
+     */
+    _fadeOut() {
+      const ctx = self.ctx;
+
+      if (this.sub.settings.verbose) {
+        console.log("_fadeOut");
+      }
+
+      /* Hold the containerId width, and fade out */
+      ctx.visible.classList.add(this.animatingClass);
+
+      this.steps.shift(); // pop _fadeOut
+
+      ctx.visible.addEventListener(this.transitionEnd, this.steps[0], false);
+      ctx.invisible.style.width = ctx.invisible.offsetWidth + "px";
+      ctx.visible.style.opacity = 0;
+    };
+
+    /**
+     * Set with width of this word to the width of ctx.newText.
+     */
+    _setWidth() {
+      const ctx = this.ctx;
+
+      if (this.sub.settings.verbose) {
+        console.log("_setWidth");
+      }
+
+      /* Animate the width */
+      ctx.visible.className = ctx.visible.className.replace(self.animatingClass, "");
+      ctx.invisible.className += self.animatingClass;
+
+      ctx.visible.removeEventListener(self.transitionEnd, self.steps[0], false);
+
+      self.steps.shift(); // pop _setWidth
+
+      ctx.invisible.addEventListener(self.transitionEnd, self.steps[0], false);
+
+      const newWidth = self._calculateWordWidth(
+        ctx.newText,
+        self.sub.wrapper.tagName,
+        self.sub.wrapper.className.split(" ")
+      );
+
+      setTimeout(() => {
+        ctx.invisible.style.width = newWidth + "px";
+      }, 5);
+    };
+
+    /**
+     * Remove this element from the DOM
+     */
+    _removeElement() {
+      var ctx = this.ctx;
+
+      if (this.sub.settings.verbose) {
+        console.log("_removeElement");
+      }
+
+      /* Remove this word */
+      ctx.invisible.removeEventListener(this.transitionEnd, this.steps[0], false);
+      this.sub.wrapper.removeChild(ctx.word);
+    };
+
+    /**
+     * Set the text of this element to ctx.newText and fade it in.
+     */
+    _setTextAndFadeIn() {
+      const ctx = this.ctx;
+
+      if (this.sub.settings.verbose) {
+        console.log("_setTextAndFadeIn");
+      }
+
+      /* Sub the text then fade in */
+      ctx.invisible.className = ctx.invisible.className.replace(this.animatingClass, "");
+      ctx.visible.className += this.animatingClass;
+      ctx.invisible.removeEventListener(this.transitionEnd, this.steps[0], false);
+
+      this.steps.shift(); // pop _setTextAndFadeIn
+
+      ctx.visible.addEventListener(this.transitionEnd, this.steps[0], false);
+      ctx.visible.innerHTML = ctx.newText;
+      ctx.invisible.innerHTML = ctx.newText;
+      ctx.visible.style.opacity = 1;
+    };
+
+    /**
+     * Remove animation classes, remove event listeners, and set widths to "auto"
+     */
+    _cleanUp() {
+      const {
+        ctx,
+        animatingClass,
+        transitionEnd,
+        steps,
+        "sub": {
+          "settings": verbose
+        }
+      } = this;
+
+      if (verbose) {
+        console.log("_cleanUp");
+      }
+
+      /* Clean Up */
+      ctx.invisible.className = ctx.invisible.className.replace(animatingClass, "");
+      ctx.visible.className = ctx.visible.className.replace(animatingClass, "");
+      ctx.visible.removeEventListener(transitionEnd, steps[0], false);
+      ctx.invisible.style.width = "auto";
+    };
+
+    /**
+     * Find the width that an element with a given tag and classes would have if
+     * it contained the passed text.
+     *
+     * @param {string} text - the text to get the width of
+     * @param {string} tag - the tag that the text will be put in
+     * @param {string[]} classes - an array of classes associated with this
+     *                             element.
+     */
+    _calculateWordWidth(text, tag, classes = []) {
+      const elem = document.createElement(tag);
+
+      classes.push(this.sub.settings.namespace + "-text-width-calculation");
+
+      elem.setAttribute("class", classes.join(" "));
+      elem.innerHTML = text;
+
+      document.body.appendChild(elem);
+      /* Get a decimal number of the form 12.455 */
+      const width = parseFloat(window.getComputedStyle(elem, null).width);
+
+      elem.parentNode.removeChild(elem);
+
+      return width;
+    };
   }
-
-  /**
-   * Change the index class of the word.
-   */
-  Animation.prototype._reIndex = function() {
-    var self = this;
-    var ctx = self.ctx;
-    // if (self.sub.settings.verbose) { console.log("_reIndex"); }
-
-    // Perform substitution if needed
-    if (self.sub.settings.verbose) {console.log("_reIndex ", ctx.word.innerText, " from ",  ctx.fromIndexClass, " to ", ctx.toIndexClass); }
-    ctx.word.className = ctx.word.className.replace(ctx.fromIndexClass, ctx.toIndexClass);
-
-    // run next step if there is one
-    self.steps.shift(); // pop _reIndex
-    if (self.steps.length > 0) {
-      self.steps[0]();
-    }
-  };
-
-  /**
-   * Fade out this word
-   */
-  Animation.prototype._fadeOut = function() {
-    var self = this;
-    var ctx = self.ctx;
-    if (self.sub.settings.verbose) { console.log("_fadeOut"); }
-
-    /* Hold the containerId width, and fade out */
-    ctx.visible.className += self.animatingClass;
-    self.steps.shift(); // pop _fadeOut
-    ctx.visible.addEventListener(self.transitionEnd, self.steps[0], false);
-    ctx.invisible.style.width = ctx.invisible.offsetWidth + "px";
-    ctx.visible.style.opacity = 0;
-  };
-
-  /**
-   * Set with width of this word to the width of ctx.newText.
-   */
-  Animation.prototype._setWidth = function() {
-    var self = this;
-    var ctx = self.ctx;
-    if (self.sub.settings.verbose) { console.log("_setWidth"); }
-    /* Animate the width */
-    ctx.visible.className = ctx.visible.className.replace(self.animatingClass, "");
-    ctx.invisible.className += self.animatingClass;
-    ctx.visible.removeEventListener(self.transitionEnd, self.steps[0], false);
-    self.steps.shift(); // pop _setWidth
-    ctx.invisible.addEventListener(self.transitionEnd, self.steps[0], false);
-    var newWidth = self._calculateWordWidth(
-      ctx.newText,
-      self.sub.wrapper.tagName,
-      self.sub.wrapper.className.split(" ")
-    );
-    setTimeout(function() {
-      ctx.invisible.style.width = newWidth + "px";
-    }, 5);
-  };
-
-  /**
-   * Remove this element from the DOM
-   */
-  Animation.prototype._removeElement = function() {
-    var self = this;
-    var ctx = self.ctx;
-    if (self.sub.settings.verbose) { console.log("_removeElement"); }
-
-    /* Remove this word */
-    ctx.invisible.removeEventListener(self.transitionEnd, self.steps[0], false);
-    self.sub.wrapper.removeChild(ctx.word);
-  };
-
-  /**
-   * Set the text of this element to ctx.newText and fade it in.
-   */
-  Animation.prototype._setTextAndFadeIn = function() {
-    var self = this;
-    var ctx = self.ctx;
-    if (self.sub.settings.verbose) { console.log("_setTextAndFadeIn"); }
-    /* Sub the text then fade in */
-    ctx.invisible.className = ctx.invisible.className.replace(self.animatingClass, "");
-    ctx.visible.className += self.animatingClass;
-    ctx.invisible.removeEventListener(self.transitionEnd, self.steps[0], false);
-    self.steps.shift(); // pop _setTextAndFadeIn
-    ctx.visible.addEventListener(self.transitionEnd, self.steps[0], false);
-    ctx.visible.innerHTML = ctx.newText;
-    ctx.invisible.innerHTML = ctx.newText;
-    ctx.visible.style.opacity = 1;
-  };
-
-  /**
-   * Remove animation classes, remove event listeners, and set widths to "auto"
-   */
-  Animation.prototype._cleanUp = function() {
-    var self = this;
-    var ctx = self.ctx;
-    if (self.sub.settings.verbose) { console.log("_cleanUp"); }
-
-    /* Clean Up */
-    ctx.invisible.className = ctx.invisible.className.replace(self.animatingClass, "");
-    ctx.visible.className = ctx.visible.className.replace(self.animatingClass, "");
-    ctx.visible.removeEventListener(self.transitionEnd, self.steps[0], false);
-    ctx.invisible.style.width = "auto";
-  };
-
-  /**
-   * Find the width that an element with a given tag and classes would have if
-   * it contained the passed text.
-   *
-   * @param {string} text - the text to get the width of
-   * @param {string} tag - the tag that the text will be put in
-   * @param {string[]} classes - an array of classes associated with this
-   *                             element.
-   */
-  Animation.prototype._calculateWordWidth = function(text, tag, classes) {
-    var self = this;
-    var elem = document.createElement(tag);
-    classes = classes || [];
-    classes.push(self.sub.settings.namespace + "-text-width-calculation");
-    elem.setAttribute("class", classes.join(" "));
-    elem.innerHTML = text;
-    document.body.appendChild(elem);
-    /* Get a decimal number of the form 12.455 */
-    var width = parseFloat(window.getComputedStyle(elem, null).width);
-    elem.parentNode.removeChild(elem);
-    return width;
-  };
 
   window.Sub = Sub;
 

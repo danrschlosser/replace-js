@@ -2,10 +2,23 @@
 "use strict";
 
 module.exports = function (grunt) {
+  require("load-grunt-tasks")(grunt);
+
   grunt.initConfig({
+    babel: {
+      options: {
+        sourceMap: true,
+        presets: ['es2015']
+      },
+      dist: {
+        files: {
+          'dist/substituteteacher.js': 'src/substituteteacher.js'
+        }
+      }
+    },
     jasmine: {
       pivotal: {
-        src: "src/substituteteacher.js",
+        src: "dist/substituteteacher.js",
         options: {
           specs: "test/*Spec.js",
           helpers: "test/*Helper.js"
@@ -15,12 +28,14 @@ module.exports = function (grunt) {
     uglify: {
       my_target: {
         files: {
-          "src/substituteteacher.min.js": ["src/substituteteacher.js"]
+          "dist/substituteteacher.min.js": ["dist/substituteteacher.js"]
         }
       }
     }
   });
+
   grunt.loadNpmTasks("grunt-contrib-jasmine");
   grunt.loadNpmTasks("grunt-contrib-uglify");
-  grunt.registerTask("default", ["less"]);
+
+  grunt.registerTask("default", ["babel"]);
 };
