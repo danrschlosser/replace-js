@@ -35,7 +35,7 @@ npm install substitute-teacher --save-dev
 
 ```javascript
 var sub = new Sub([
-    "A daring JavaScript library for subsitute teachers",
+    "A daring JavaScript library for substitute teachers",
     "A hilarious JavaScript library for awesome taglines",
     "A svelte JavaScript library for sweet taglines",
     "A super fun and wholesome JavaScript library for sliding fun",
@@ -72,7 +72,7 @@ var sub = new Sub([
 
 ### Options
 
-| Option | Description | Defualt |
+| Option | Description | Default |
 |--------|-------------|---------|
 | `containerId` | Id of the injection point for HTML | `"sub"`
 | `namespace` | Namespace to prepend to classes used internally | `"sub"`
@@ -82,7 +82,7 @@ var sub = new Sub([
 | `verbose` | True to enable console logging | `false`
 | `random` | True if the first sentence to appear should be random | `false`
 | `best` | True if the sentences should be ordered to minimize the number of changes performed | `true`
-| `clearOriginalContent` | True to empty out container and fade in the substitute teacher, false to seemlessly transition from the original content to the first item. This only works if `random` is `false` | `true`
+| `clearOriginalContent` | True to empty container and fade in the substitute teacher, false to seamlessly transition from the original content to the first item. This only works if `random` is `false` | `true`
 
 ### run()
 
